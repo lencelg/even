@@ -54,39 +54,62 @@
       <a href="<%= url_for(post.path) %>" class="read-more-link"><%- __('posts.readmore') %></a>
     </div>
     <% } else if (theme.excerpt && theme.excerpt.enable) { %>
-    <% // Auto-generate excerpt: keep HTML but truncate at paragraph boundary
-    var html = post.content;
-    var maxLen = theme.excerpt.length || 300;
-    // Try to find an appropriate paragraph break point
-    var truncated = '';
-    var plainText = html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-    var paraCount = 0;
-    var searchPos = 0;
-    var breakPos = -1;
-    // Find the 2nd or 3rd </p> tag as break point (to get meaningful content)
-    while (paraCount < 3 && searchPos < html.length) {
-      var nextPara = html.indexOf('</p>', searchPos);
-      if (nextPara === -1) break;
-      paraCount++;
-      var segmentText = html.substring(searchPos, nextPara).replace(/<[^>]+>/g, '').trim();
-      // Mark break at 2nd paragraph or when we have enough text
-      if (paraCount >= 2 || segmentText.length > 60) {
-        breakPos = nextPara + 4;
-        break;
-      }
-      searchPos = nextPara + 4;
-    }
-    if (breakPos > 0 && plainText.length > maxLen) {
-      truncated = html.substring(0, breakPos) + '...';
-    } else if (plainText.length > maxLen) {
-      // Fallback: strip HTML and truncate plain text
-      var txt = plainText.substring(0, maxLen);
-      var lastSpace = txt.lastIndexOf(' ');
-      if (lastSpace > 0) { txt = txt.substring(0, lastSpace); }
-      truncated = '<p>' + txt + '...</p>';
-    } else {
-      truncated = html;
-    }
+    <% // Auto-generate excerpt: strip code blocks but preserve inline formatting
+       var html = post.content;
+       var maxLen = theme.excerpt.length || 300;
+       var truncated = '';
+
+       // Remove code blocks, figures, and tables — they don't belong in excerpts
+       var cleaned = html
+         .replace(/<pre[^>]*>[\s\S]*?<\/pre>/g, '')
+         .replace(/<figure[^>]*>[\s\S]*?<\/figure>/g, '')
+         .replace(/<table[^>]*>[\s\S]*?<\/table>/g, '');
+
+       // Calculate plain text length of cleaned HTML
+       var plainLen = cleaned.replace(/<[^>]+>/g, '').replace(/\s+/g, '').length;
+
+       if (plainLen <= maxLen) {
+         // Short enough — use as-is
+         truncated = cleaned;
+       } else {
+         // Too long — truncate at paragraph boundaries
+         var parts = cleaned.split(/<\/p>/i);
+         var accumulated = '';
+         var accumulatedLen = 0;
+         var cut = false;
+
+         for (var pi = 0; pi < parts.length; pi++) {
+           var part = parts[pi];
+           if (!part.trim()) continue;
+           var partLen = part.replace(/<[^>]+>/g, '').replace(/\s+/g, '').length;
+           if (accumulatedLen + partLen > maxLen && accumulatedLen > 0) {
+             cut = true;
+             break;
+           }
+           if (accumulated) accumulated += '</p>';
+           accumulated += part;
+           accumulatedLen += partLen;
+         }
+
+         if (cut && accumulated) {
+           truncated = accumulated + '</p>...';
+         } else {
+           // Fallback: keep first maxLen chars of plain text, preserving HTML
+           var plain = cleaned.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+           if (plain.length > maxLen) {
+             var txt = plain.substring(0, maxLen);
+             var lastDot = Math.max(txt.lastIndexOf('。'), txt.lastIndexOf('. '));
+             if (lastDot > maxLen * 0.4) txt = txt.substring(0, lastDot);
+             else {
+               var lastSp = txt.lastIndexOf(' ');
+               if (lastSp > maxLen * 0.5) txt = txt.substring(0, lastSp);
+             }
+             truncated = '<p>' + txt + '...</p>';
+           } else {
+             truncated = cleaned;
+           }
+         }
+       }
     %>
     <%- truncated %>
     <div class="read-more">
