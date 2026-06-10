@@ -9,13 +9,11 @@ major difference
 
 ![](./demo/demo.png)
 
-you can also go to [my blog](https://lencelg.github.io/) for a preview
-
 ## Installation
 use `git`
 
 ```console
-$ git clone https://github.com/lencelg/hexo-theme-even-enhanced.git themes/even
+$ git clone https://github.com/lencelg/even.git themes/even
 ```
 
 ## Usage
