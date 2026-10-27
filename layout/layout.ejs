@@ -24,9 +24,13 @@
   } else if (is_tag()){
     title = page.tag + ' · ' + config.title;
   } else if (is_page() && page.title){
-    title = __('menu.' + page.title.toLowerCase()) + ' · ' + config.title;
+    var pageLabel = __('menu.' + page.title.toLowerCase());
+    if (pageLabel.indexOf('menu.') === 0) {
+      pageLabel = page.title;
+    }
+    title = pageLabel + ' · ' + config.title;
   } else {
-    title = page.title + ' - ' + config.title;
+    title = (page.title ? page.title + ' - ' : '') + config.title;
   }
   %>
   <%- partial("_partial/title.ejs", {title: title}) %>

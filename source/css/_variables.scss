@@ -170,8 +170,11 @@ $post-toc-content: 15px !default;
 $post-toc-list-style: square !default;
 
 // Max screen media of the post toc (hide on screens narrower than this)
-// Set to $global-body-width so TOC is visible on all desktop/tablet sizes
-$toc-max-sreen-width: $global-body-width !default;
+// The TOC sits outside the container on the right: it needs
+// padding (2 * $global-container-padding) + margin + width of free space
+// beside the fixed-width container, otherwise it causes a horizontal
+// scrollbar / gets clipped.
+$toc-max-sreen-width: $global-body-width + $post-toc-width * 2 + 10px !default;
 
 // ========== Content ========== //
 // Headings anchor.

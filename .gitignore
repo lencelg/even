@@ -1,0 +1,23 @@
+# Local AI/tooling instructions — not part of the theme
+CODEBUDDY.md
+AGENTS.md
+CLAUDE.md
+.claude/
+.cursor/
+
+# Dependencies
+node_modules/
+
+# Build output
+public/
+.sass-cache/
+*.css.map
+
+# Logs
+*.log
+
+# Editor / OS cruft
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

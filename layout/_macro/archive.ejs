@@ -1,6 +1,6 @@
 <%  
   var isArchivesPage = !!page.archive;  
-  var isArchivesMode = theme.mode.toLowerCase() === 'archives';  
+  var isArchivesMode = (theme.mode || 'default').toLowerCase() === 'archives';  
 %>
 
 <section id="archive" class="archive">

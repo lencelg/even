@@ -155,7 +155,7 @@
     // Nested blockquote
     blockquote {
       margin: 0.5em 0;
-      background: rgba(0,0,0,0.03);
+      background: var(--subtle-overlay);
     }
   }
 
@@ -222,7 +222,7 @@
       transition: background 0.15s;
 
       &:hover {
-        background: rgba(0,0,0,0.02);
+        background: var(--subtle-overlay);
       }
     }
   }

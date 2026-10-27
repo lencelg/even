@@ -30,6 +30,7 @@
   --mobile-menu-background: #{rgba($deputy-color, 0.5)};
   --selection-color: #ffffff;
   --theme-color-meta: #{$deputy-color};
+  --subtle-overlay: rgba(0, 0, 0, 0.03);
 
   // Code syntax highlight (solarized light)
   --highlight-comment: #93a1a1;
@@ -72,6 +73,7 @@
   --mobile-menu-background:     rgba(68, 71, 90, 0.5);
   --selection-color:            var(--dark-bg);
   --theme-color-meta:           var(--dark-current);
+  --subtle-overlay:             rgba(255, 255, 255, 0.06);
 
   // Code syntax highlight (inspired by configured theme color)
   --highlight-comment:  var(--dark-comment);

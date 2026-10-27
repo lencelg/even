@@ -2,12 +2,10 @@
 <%- partial ("./_head/meta.ejs") %>
 
 <!-- Website rss -->
-<% if (theme.rss === 'default' && config.feed && config.feed.path) { %>
-<%- feed_tag(config.feed.path) %>
+<% if (theme.rss === 'default') { %>
+<%- feed_tag(config.feed && config.feed.path ? config.feed.path : 'atom.xml') %>
 <% } else if (theme.rss) { %>
 <%- feed_tag(theme.rss) %>
-<% } else { %>
-<%- feed_tag('atom.xml') %>
 <% } %>
 
 <!-- Website favicon -->
@@ -23,8 +21,10 @@
 <link rel="stylesheet" type="text/css" href="<%- url_for('lib/fancybox/jquery.fancybox.css') %>" />
 <% } %>
 
-<!-- KaTeX support (used by Markdown Preview Enhanced) -->
-<% if (theme.latex && theme.katex && theme.katex.enable) { %>
+<!-- LaTeX support: renderer is selectable via theme.latex_renderer -->
+<% var latexRenderer = theme.latex_renderer || ((theme.katex && theme.katex.enable) ? 'katex' : 'mathjax'); %>
+<% var useKatex = latexRenderer === 'katex' && theme.katex && theme.katex.enable; %>
+<% if (theme.latex && useKatex) { %>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous" />
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
 <% if (theme.katex.autoRender) { %>
@@ -39,10 +39,8 @@
 <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 <% } %>
 
-<!-- Mermaid diagram support (used by Markdown Preview Enhanced) -->
-<% if (theme.mermaid && theme.mermaid.enable) { %>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.css" />
-<% } %>
+<!-- Mermaid diagram support: mermaid v11 injects its own styles at runtime,
+     and the package ships no standalone stylesheet -->
 
 <!-- Theme styling -->
 <link rel="stylesheet" type="text/css" href="<%- url_for('css/style.css') %>?v=<%- theme.version %>" />
@@ -55,7 +53,7 @@
 
 <!-- LeanCloud Counter -->
 <%- partial ("../_script/counter.ejs") %>
-<% var themeConfig = { leancloud: theme.leancloud, toc: theme.toc, fancybox: theme.fancybox, latex: theme.latex, katex: theme.katex, mermaid: theme.mermaid }; %>
+<% var themeConfig = { leancloud: theme.leancloud, toc: theme.toc, fancybox: theme.fancybox, latex: theme.latex, latex_renderer: useKatex ? 'katex' : 'mathjax', katex: theme.katex, mermaid: theme.mermaid }; %>
 <script>
   window.config = <%- JSON.stringify(themeConfig) %>;
 </script>

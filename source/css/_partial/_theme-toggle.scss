@@ -66,7 +66,9 @@
   }
 }
 
-@include min-screen() {
+// +1px so this never overlaps the max-screen() rule above: at exactly
+// $global-body-width the mobile navbar is visible and must keep its toggle
+@include min-screen($global-body-width + 1px) {
   .mobile-theme-toggle {
     display: none;
   }

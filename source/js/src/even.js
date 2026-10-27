@@ -18,7 +18,7 @@
     if (this.config.fancybox) {
       this.fancybox();
     }
-    if (leancloud.app_id && leancloud.app_key) {
+    if (leancloud && leancloud.app_id && leancloud.app_key) {
       this.recordReadings();
     }
     if(this.config.latex) {
@@ -85,21 +85,24 @@
     var hasBackdropFilter = bf !== '' && bf !== 'none';
 
     // Store whether we've captured the fixed left position
+    var TOC_INSET = 20; // matches $global-container-padding
     var fixedLeft = null;
     var tocMarginLeft = parseFloat($toc.css('marginLeft'));
-    var initialTop = $toc.offset().top - SPACING;
+    // Measured on first scroll: while the TOC is display:none (narrow
+    // viewports) offset() is {top:0,left:0} and would pin it to the header
+    var initialTop = null;
 
     // Recalculate fixedLeft on window resize to keep TOC aligned
     $(window).on('resize', function () {
       if ($toc.css('display') === 'none') return;
-      if (fixedLeft === null && $(window).scrollTop() >= initialTop) {
+      if (initialTop !== null && fixedLeft === null && $(window).scrollTop() >= initialTop) {
         // In fixed mode but left not captured yet → capture now
         fixedLeft = $toc[0].getBoundingClientRect().left;
       }
       if (fixedLeft !== null) {
         // Recompute from current container position
         var cLeft = $container[0].getBoundingClientRect().left;
-        fixedLeft = hasBackdropFilter ? tocMarginLeft : cLeft + tocMarginLeft;
+        fixedLeft = hasBackdropFilter ? tocMarginLeft + TOC_INSET : cLeft + tocMarginLeft + TOC_INSET;
         $toc.css({ 'left': fixedLeft });
       }
     });
@@ -107,13 +110,17 @@
     $(window).scroll(function () {
       if ($toc.css('display') === 'none') return;
 
+      if (initialTop === null) {
+        initialTop = $toc.offset().top - SPACING;
+      }
+
       var scrollTop = $(window).scrollTop();
       var $active = $('.toc-link.active');
 
       // --- TOC always visible on the right side ---
       if (scrollTop < initialTop) {
         // Back to top → restore absolute positioning
-        $toc.css({ 'position': 'absolute', 'top': initialTop, 'left': '', 'marginLeft': tocMarginLeft });
+        $toc.css({ 'position': 'absolute', 'top': '', 'left': '', 'marginLeft': tocMarginLeft });
         fixedLeft = null; // reset so we re-capture on next switch
       } else {
         // Switching from absolute → fixed? Capture the exact rendered left position
@@ -349,10 +356,14 @@
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
 
-    function setTheme(theme) {
+    function applyTheme(theme) {
       html.setAttribute('data-theme', theme);
-      localStorage.setItem(STORAGE_KEY, theme);
       updateMeta(theme);
+    }
+
+    function setTheme(theme) {
+      applyTheme(theme);
+      localStorage.setItem(STORAGE_KEY, theme);
     }
 
     function updateMeta(theme) {
@@ -365,13 +376,14 @@
       if (apple) apple.setAttribute('content', color);
     }
 
-    // Apply saved or preferred theme
-    setTheme(getPreferredTheme());
+    // Apply saved or preferred theme without persisting it, so that
+    // OS-level changes are still followed when the user never chose a theme
+    applyTheme(getPreferredTheme());
 
     // Listen for OS-level changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
       if (!localStorage.getItem(STORAGE_KEY)) {
-        setTheme(e.matches ? 'dark' : 'light');
+        applyTheme(e.matches ? 'dark' : 'light');
       }
     });
 
@@ -415,8 +427,10 @@
 
   // LaTeX rendering (MathJax only — KaTeX auto-renders via auto-render.js)
   Even.prototype.renderLaTeX = function () {
-    // Only poll for MathJax if KaTeX is NOT enabled
-    if (this.config.katex && this.config.katex.enable) return;
+    // Only poll for MathJax if the MathJax renderer is in use
+    var renderer = this.config.latex_renderer ||
+      ((this.config.katex && this.config.katex.enable) ? 'katex' : 'mathjax');
+    if (renderer !== 'mathjax') return;
 
     var loopID = setInterval(function () {
       if(window.MathJax) {
@@ -434,15 +448,20 @@
   Even.prototype.fixLists = function () {
     $('.post-content p').each(function () {
       var $p = $(this);
+      // Leave paragraphs that already contain rendered inline content alone
+      if ($p.find('code, a, img, pre, ul, ol').length) return;
       var html = $p.html();
 
-      // Match numbered items: look for "N." or "N、" or "N．" patterns
+      // Match numbered items: look for "N." or "N、" or "N．" patterns.
+      // The marker must start the paragraph or follow whitespace, and must
+      // not be followed by a digit — otherwise "1.0" / "2.5" would be
+      // mistaken for list markers.
       // Must have at least 2 sequential numbers in the paragraph
-      var numRegex = /(\d+)\s*[.、．]/g;
+      var numRegex = /(^|\s)(\d{1,2})[.、．](?!\d)\s*/g;
       var nums = [];
       var m;
       while ((m = numRegex.exec(html)) !== null) {
-        nums.push({ num: parseInt(m[1]), idx: m.index, end: numRegex.lastIndex });
+        nums.push({ num: parseInt(m[2]), idx: m.index, end: numRegex.lastIndex });
       }
 
       if (nums.length < 2) return;
@@ -689,11 +708,12 @@
       return pre + '<em>' + g1 + '</em>' + post;
     });
 
+    // Images: ![alt](url) — must run before the link rule, which would
+    // otherwise match the [alt](url) part and leave a stray "!"
+    text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+
     // Links: [text](url)
     text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-
-    // Images: ![alt](url)
-    text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
 
     return text;
   };

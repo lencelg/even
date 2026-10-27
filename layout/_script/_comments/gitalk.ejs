@@ -1,4 +1,4 @@
-<% if (theme.gitalk.enable && is_post()) { %>
+<% if (theme.gitalk && theme.gitalk.enable && is_post()) { %>
 <% var gitalk_js_url = '//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js'; %>
 <script src="<%- gitalk_js_url %>"></script>
 
@@ -21,7 +21,7 @@
     <% } else { %>
     language: '<%- theme.gitalk.language %>',
     <% } %>
-    distractionFreeMode: '<%- theme.gitalk.distraction_free_mode %>'
+    distractionFreeMode: <%- theme.gitalk.distraction_free_mode ? 'true' : 'false' %>
   });
   gitalk.render('gitalk-container');
 </script>

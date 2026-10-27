@@ -25,8 +25,19 @@
       </span>
       <% } %>
       <% if (theme.reading_time && theme.reading_time.enable) { %>
+      <%
+        // Count CJK characters individually and Latin text by word, then apply
+        // one rate. Counting raw characters would overestimate English posts
+        // by roughly 5x (a character is not a word).
+        var plainText = post.content.replace(/<[^>]+>/g, ' ');
+        var cjkChars = (plainText.match(/[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/g) || []).length;
+        var latinWords = (plainText
+          .replace(/[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/g, ' ')
+          .match(/[A-Za-z0-9_]+(?:['’-][A-Za-z0-9_]+)*/g) || []).length;
+        var readingMinutes = Math.max(1, Math.round((cjkChars + latinWords) / (theme.reading_time.words_per_minute || 300)));
+      %>
       <span class="post-reading-time">
-        <%- __('posts.readingtime', Math.max(1, Math.round((post.content.replace(/<[^>]+>/g, '').replace(/\s+/g, '').length) / (theme.reading_time.words_per_minute || 300)))) %>
+        <%- __('posts.readingtime', readingMinutes) %>
       </span>
       <% } %>
       <% if (theme.leancloud && theme.leancloud.app_id && theme.leancloud.app_key) { %>

@@ -46,8 +46,10 @@ excerpt:
 fancybox: true
 
 # LaTeX support
-# Choose your renderer: 'mathjax' (default) | 'katex'
+# Renderer: 'katex' (default) | 'mathjax'
+# KaTeX is only used when katex.enable is true; set latex_renderer: mathjax to force MathJax
 latex: true
+latex_renderer: katex
 
 # KaTeX options (used when latex is enabled and renderer is 'katex')
 # Markdown Preview Enhanced uses KaTeX by default
@@ -103,6 +105,8 @@ social:
 # ===========================================
 
 # LeanCloud
+# server_url: custom API server (China region / self-hosted), optional
+# cdn: custom av-min.js URL, optional
 leancloud:
   app_id:
   app_key:
@@ -159,7 +163,13 @@ utterances:
   theme: github-light # Theme: github-light | github-dark | github-dark-orange | icy-dark | dark-blue | photon-dark
   label: utterances # Issue label
 
+# Cusdis
+# Docs: https://cusdis.com/
+cusdis:
+  host: https://cusdis.com
+  app_id:
+
 # ===========================================
 # Version
 # ===========================================
-version: 3.0.0
+version: 3.0.2

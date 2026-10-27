@@ -8,6 +8,7 @@ menu:
 footer:
   powered: "由 %s 技術提供"
   theme: 主題
+  hosting: "託管於 %s"
 
 posts:
   prev: 上一頁
@@ -18,6 +19,7 @@ posts:
   readmore: 閱讀更多
   visits: '閱讀次數'
   reward: '讚賞支持'
+  readingtime: '%d 分鐘'
 
 copyright:
   author: '原文作者'
@@ -31,7 +33,7 @@ counter:
     other: "目前總計 %d 篇文章"
 
   tagcloud:
-    zero: 暫無文章
+    zero: 暫無標籤
     one: 目前總計 1 個標籤
     other: "目前總計 %d 個標籤"
 
