@@ -55,13 +55,25 @@ a {
 }
 
 .container {
+  display: flex;
+  flex-direction: column;
+  // Sticky footer: fill the viewport so short pages (archives, tags,
+  // categories, about) keep the footer at the bottom instead of right
+  // under the content. 3px compensates for the body's top border.
+  min-height: calc(100vh - 3px);
   margin: 0 auto;
   width: $global-body-width;
+}
+
+.main {
+  flex: 1 0 auto;
 }
 
 @include max-screen() {
   .container {
     width: 100%;
+    // body has no top border on small screens
+    min-height: 100vh;
     box-shadow: -1px -5px 5px var(--border-color-alt);
   }
 }
